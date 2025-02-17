@@ -11,7 +11,6 @@ Class MainWindow
     End Sub
 
     Private Sub LibraryWindow_Loaded(sender As Object, e As RoutedEventArgs) Handles LibraryWindow.Loaded
-        appDB.addFakeBooks()
         dataTable = appDB.getAllBooks()
 
         BooksDatagrid.ItemsSource = dataTable.DefaultView
@@ -21,16 +20,13 @@ Class MainWindow
         WindowState = WindowState.Maximized
     End Sub
 
-    Private Sub Bibliothèque_Loaded(sender As Object, e As RoutedEventArgs) Handles Bibliothèque.Loaded
-        'appDB.addFakeBooks()
-    End Sub
-
     Private Sub EditRow_Click(sender As Object, e As RoutedEventArgs)
         With BooksDatagrid
             Dim myBookForm As New BookForm(dataTable, .SelectedItem()!ID, .SelectedIndex)
             myBookForm.ShowDialog()
         End With
     End Sub
+
     Private Sub DeleteRow_Click(sender As Object, e As RoutedEventArgs)
         If MsgBox("Voulez-vous vraiement supprimer ce livre ?", vbYesNo) = vbYes Then
             With BooksDatagrid

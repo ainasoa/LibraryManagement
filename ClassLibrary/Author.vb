@@ -6,8 +6,8 @@
         Return String.Format(
             "{0} ({1} {2})",
             Pseudo,
-            Firstname,
-            Lastname
+            MyBase.Firstname,
+            MyBase.Lastname
         )
     End Function
 End Class

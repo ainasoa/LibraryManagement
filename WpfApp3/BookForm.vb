@@ -45,7 +45,7 @@ Public NotInheritable Class BookForm
                 End With
 
                 If Me.bookId <> 0 Then
-                    appBD.editBook(book)
+                    appBD.EditBook(book)
 
                     Dim row As DataRow = dataTable.Rows.Item(bookIndex)
 
@@ -57,14 +57,15 @@ Public NotInheritable Class BookForm
 
                     dataTable.AcceptChanges()
                 Else
-                    lastInsertedId = appBD.addBook(book)
-                    dataTable.Rows.Add(lastInsertedId, book.Title, book.Description, author.Pseudo)
+                    lastInsertedId = appBD.AddBook(book)
+                    dataTable.Rows.Add(lastInsertedId, book.Title, book.PageNumber, book.Description, author)
                 End If
 
                 Close()
             End Using
 
         Catch ex As Exception
+            Console.WriteLine("SaveButton_Click")
             Console.WriteLine(ex)
         End Try
     End Sub
@@ -72,7 +73,7 @@ Public NotInheritable Class BookForm
     Private Sub BookForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         If bookId <> 0 Then
             Using appBD = New AppDB()
-                Dim book As Book = appBD.getOneBook(bookId)
+                Dim book As Book = appBD.GetOneBook(bookId)
 
                 TitleTextBox.Text = book.Title
                 DescriptionTextBox.Text = book.Description

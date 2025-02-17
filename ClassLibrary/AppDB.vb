@@ -54,8 +54,9 @@ Public Class AppDB : Implements IDisposable
         End Try
     End Sub
 
-    Public Function addBook(book As Book) As Long
-        Console.WriteLine("addBook:" & book.Title)
+    Public Function AddBook(book As Book) As Long
+        Dim LastInsertRowId As Long
+
         Try
             Using connection = connect()
                 Using cmd = New SQLiteCommand()
@@ -79,7 +80,6 @@ Public Class AppDB : Implements IDisposable
                         Console.WriteLine("Author created with ID =" & connection.LastInsertRowId)
 
                         Dim authorId = connection.LastInsertRowId
-                        Console.WriteLine("Author ID - " & authorId)
 
                         'new book
                         .CommandText = "INSERT INTO 
@@ -95,9 +95,9 @@ Public Class AppDB : Implements IDisposable
                         End With
 
                         .ExecuteNonQuery()
-                        Console.WriteLine("Book created ID" & connection.LastInsertRowId)
 
-                        Return connection.LastInsertRowId
+                        LastInsertRowId = connection.LastInsertRowId
+                        Console.WriteLine("LastInsertRowId ID - " & LastInsertRowId)
                     End With
                 End Using
             End Using
@@ -105,10 +105,12 @@ Public Class AppDB : Implements IDisposable
             Console.WriteLine("addBook Error")
             Console.WriteLine(ex)
         End Try
+
+        Return LastInsertRowId
     End Function
 
-    Public Function getOneBook(bookId As Long) As Book
-        Console.WriteLine("getOneBook.....")
+    Public Function GetOneBook(bookId As Long) As Book
+        Console.WriteLine("getOneBook....." & bookId)
         Dim book As New Book()
         Dim author As New Author()
 
@@ -116,53 +118,57 @@ Public Class AppDB : Implements IDisposable
             Using connection = connect()
                 Using bookCmd = New SQLiteCommand()
                     bookCmd.Connection = connection
-                    bookCmd.CommandText = "SELECT * FROM Book WHERE  id=@bookId;"
+                    bookCmd.CommandText = "SELECT * FROM Book WHERE id=@bookId;"
                     bookCmd.Parameters.AddWithValue("@bookId", bookId)
 
                     Using bookReader = bookCmd.ExecuteReader()
-                        While bookReader.Read()
-                            Using authorCmd = New SQLiteCommand()
-                                authorCmd.Connection = connect()
-                                authorCmd.CommandText = "SELECT * FROM Author WHERE id=@authorId;"
-                                authorCmd.Parameters.AddWithValue("@authorId", bookReader!authorId)
+                        If bookReader.HasRows Then
 
-                                Using authorReader = authorCmd.ExecuteReader()
-                                    While authorReader.Read()
-                                        With author
-                                            .ID = CInt(authorReader!id)
-                                            .Pseudo = CStr(authorReader!pseudo)
-                                            .Firstname = CStr(authorReader!firstname)
-                                            .Lastname = CStr(authorReader!lastname)
-                                        End With
+                            While bookReader.Read()
+                                Using authorCmd = New SQLiteCommand()
+                                    authorCmd.Connection = Connect()
+                                    authorCmd.CommandText = "SELECT * FROM Author WHERE id=@authorId;"
+                                    authorCmd.Parameters.AddWithValue("@authorId", CInt(bookReader!authorId))
 
-                                        With book
-                                            .ID = CInt(bookReader!id)
-                                            .Title = CStr(bookReader!title)
-                                            .Photo = CStr(bookReader!photo)
-                                            .Description = CStr(bookReader!description)
-                                            .PageNumber = CInt(bookReader!pageNumber)
-                                            .Author = author
-                                        End With
-                                    End While
+                                    Using authorReader = authorCmd.ExecuteReader()
+                                        If authorReader.HasRows Then
+                                            While authorReader.Read()
+                                                With author
+                                                    .ID = CInt(authorReader!id)
+                                                    .Pseudo = CStr(authorReader!pseudo)
+                                                    .Firstname = CStr(authorReader!firstname)
+                                                    .Lastname = CStr(authorReader!lastname)
+                                                End With
+
+                                                With book
+                                                    .ID = CInt(bookReader!id)
+                                                    .Title = CStr(bookReader!title)
+                                                    .Description = CStr(bookReader!description)
+                                                    .PageNumber = CInt(bookReader!pageNumber)
+                                                    .Author = author
+                                                End With
+                                                Console.WriteLine("bookReader!title" & CStr(bookReader!title))
+                                            End While
+                                        End If
+                                    End Using
                                 End Using
-                            End Using
-                        End While
+                            End While
+                        End If
 
-                        Return book
                     End Using
                 End Using
             End Using
 
         Catch ex As Exception
-            Console.WriteLine("getAllBooks Error")
+            Console.WriteLine("getBook Error")
             Console.WriteLine(ex)
         End Try
+        Return book
     End Function
 
-    Public Function getAllBooks() As DataTable
+    Public Function GetAllBooks() As DataTable
         Console.WriteLine("getAllBooks.....")
         Dim booksDataTable As New DataTable()
-        'Dim dataAdapter As SQLiteDataAdapter
 
         Try
             Using connection = connect()
@@ -176,37 +182,38 @@ Public Class AppDB : Implements IDisposable
                         .Add("Nombre de Page", GetType(String))
                         .Add("Description", GetType(String))
                         .Add("Auteur", GetType(String))
-                        '.Add("Nombre de page", GetType(Integer))
                     End With
 
                     Using bookReader = bookCmd.ExecuteReader()
-                        While bookReader.Read()
-                            Using authorCmd = New SQLiteCommand()
-                                authorCmd.Connection = connect()
-                                authorCmd.CommandText = "SELECT * FROM Author WHERE id=@authorId;"
-                                authorCmd.Parameters.AddWithValue("@authorId", bookReader!authorId)
 
-                                Using authorReader = authorCmd.ExecuteReader()
-                                    While authorReader.Read()
-                                        Console.WriteLine(authorReader!pseudo)
-                                        booksDataTable.Rows.Add(
+                        If (bookReader.HasRows) Then
+                            While bookReader.Read()
+                                Using authorCmd = New SQLiteCommand()
+                                    authorCmd.Connection = Connect()
+                                    authorCmd.CommandText = "SELECT * FROM Author WHERE id=@authorId;"
+                                    authorCmd.Parameters.AddWithValue("@authorId", bookReader!authorId)
+
+                                    Using authorReader = authorCmd.ExecuteReader()
+                                        While authorReader.Read()
+
+                                            booksDataTable.Rows.Add(
                                             bookReader!id,
                                             bookReader!title,
                                             bookReader!pageNumber,
                                             bookReader!description,
                                             String.Format(
-                                                "{0} ({1} {2})",
-                                                authorReader!pseudo,
-                                                authorReader!firstname,
-                                                authorReader!lastname
+                                                    "{0} ({1} {2})",
+                                                    authorReader!pseudo,
+                                                    authorReader!firstname,
+                                                    authorReader!lastname
+                                                )
                                             )
-                                         )
-                                    End While
+                                        End While
+                                    End Using
                                 End Using
-                            End Using
-                        End While
+                            End While
+                        End If
 
-                        Return booksDataTable
                     End Using
                 End Using
             End Using
@@ -215,9 +222,11 @@ Public Class AppDB : Implements IDisposable
             Console.WriteLine("getAllBooks Error")
             Console.WriteLine(ex)
         End Try
+
+        Return booksDataTable
     End Function
 
-    Public Sub deleteBook(id As Long)
+    Public Sub DeleteBook(id As Long)
         Using connection = connect()
             Using cmd = New SQLiteCommand()
                 With cmd
@@ -231,21 +240,21 @@ Public Class AppDB : Implements IDisposable
         End Using
     End Sub
 
-    Public Sub editBook(book As Book)
+    Public Sub EditBook(book As Book)
         Using connection = connect()
             Using cmd = New SQLiteCommand()
                 With cmd
                     .Connection = connection
+
+                    'update book
                     .CommandText = "UPDATE book SET title=@title, description=@description, pageNumber=@pageNumber WHERE id=@id"
                     .Parameters.AddWithValue("@id", book.ID)
                     .Parameters.AddWithValue("@title", book.Title)
                     .Parameters.AddWithValue("@description", book.Description)
                     .Parameters.AddWithValue("@pageNumber", book.PageNumber)
                     .ExecuteNonQuery()
-                End With
 
-                With cmd
-                    .Connection = connection
+                    'update author
                     .CommandText = "UPDATE author SET firstname=@firstname, lastname=@lastname, pseudo=@pseudo WHERE id=@id"
                     .Parameters.AddWithValue("@id", book.Author.ID)
                     .Parameters.AddWithValue("@firstname", book.Author.Firstname)
@@ -257,7 +266,7 @@ Public Class AppDB : Implements IDisposable
         End Using
     End Sub
 
-    Public Sub addFakeBooks()
+    Public Sub AddFakeBooks()
         Dim book As New Book()
         Dim author As New Author()
 
@@ -276,7 +285,7 @@ Public Class AppDB : Implements IDisposable
                 .Author = author
             End With
 
-            addBook(book)
+            AddBook(book)
         Next
 
     End Sub
@@ -286,8 +295,8 @@ Public Class AppDB : Implements IDisposable
         GC.WaitForPendingFinalizers()
     End Sub
 
-    Private Function connect() As SQLiteConnection
-        Dim connection As New SQLiteConnection("Data Source=database.v2.db;")
+    Private Function Connect() As SQLiteConnection
+        Dim connection As New SQLiteConnection("Data Source=database.v4.db;")
 
         connection.Open()
         Console.WriteLine("database opened")
