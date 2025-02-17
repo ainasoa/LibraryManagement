@@ -32,7 +32,7 @@ Public NotInheritable Class BookForm
                     .Lastname = LastnameTextBox.Text
                     .Pseudo = PseudoTextBox.Text
 
-                    If Not IsNothing(Me.authorId) Then .ID = Me.authorId
+                    If Me.authorId <> 0 Then .ID = Me.authorId
                 End With
 
                 With book
@@ -41,10 +41,10 @@ Public NotInheritable Class BookForm
                     .PageNumber = PageNumberTextBox.Text
                     .Author = author
 
-                    If Not IsNothing(Me.bookId) Then .ID = Me.bookId
+                    If Me.bookId <> 0 Then .ID = Me.bookId
                 End With
 
-                If Not IsNothing(Me.bookId) Then
+                If Me.bookId <> 0 Then
                     appBD.editBook(book)
 
                     Dim row As DataRow = dataTable.Rows.Item(bookIndex)
@@ -70,9 +70,10 @@ Public NotInheritable Class BookForm
     End Sub
 
     Private Sub BookForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        If Not IsNothing(bookId) Then
+        If bookId <> 0 Then
             Using appBD = New AppDB()
                 Dim book As Book = appBD.getOneBook(bookId)
+
                 TitleTextBox.Text = book.Title
                 DescriptionTextBox.Text = book.Description
                 PageNumberTextBox.Text = book.PageNumber

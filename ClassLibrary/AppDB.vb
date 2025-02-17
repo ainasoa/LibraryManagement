@@ -287,10 +287,10 @@ Public Class AppDB : Implements IDisposable
     End Sub
 
     Private Function connect() As SQLiteConnection
-        Dim connection As New SQLiteConnection("Data Source=database.v1.db;")
+        Dim connection As New SQLiteConnection("Data Source=database.v2.db;")
 
         connection.Open()
-        Console.WriteLine("database opned")
+        Console.WriteLine("database opened")
 
         Return connection
     End Function

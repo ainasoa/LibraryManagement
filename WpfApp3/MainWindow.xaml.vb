@@ -22,7 +22,7 @@ Class MainWindow
     End Sub
 
     Private Sub Bibliothèque_Loaded(sender As Object, e As RoutedEventArgs) Handles Bibliothèque.Loaded
-        appDB.addFakeBooks()
+        'appDB.addFakeBooks()
     End Sub
 
     Private Sub EditRow_Click(sender As Object, e As RoutedEventArgs)
