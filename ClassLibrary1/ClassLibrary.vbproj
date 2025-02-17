@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>ClassLibrary</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImportedNamespaces>ClassLibrary1=False,ClassLibrary1.My=False,Microsoft.VisualBasic=True,System=True,System.Collections=True,System.Collections.Generic=True,System.Diagnostics=True,System.Linq=True,System.Xml.Linq=True,System.Threading.Tasks=True,ClassLibrary=True</ImportedNamespaces>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Import Include="ClassLibrary1" />
+    <Import Include="ClassLibrary1.My" />
+  </ItemGroup>
+
+</Project>
